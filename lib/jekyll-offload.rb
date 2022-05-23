@@ -18,12 +18,16 @@ module JekyllOffload
         path = File.dirname(file)
         FileUtils.mkdir_p("thumbnails/#{path}") unless File.directory?("thumbnails/#{path}")
         puts "Creating thumbnail: thumbnails/#{file}"
-        image = MiniMagick::Image.open(file)
-        image.resize "400"
+        convert = MiniMagick::Tool::Magick.new
+        convert << file
+        convert.resize("x700")
+        convert << "thumbnails/#{file}"
+        convert.call
         obj = Aws::S3::Object.new(client: s3, bucket_name: ENV["S3_OFFLOAD_BUCKET"], key: "thumbnails/#{file}")
-        upload = obj.put({acl: "public-read", body: File.read(image.tempfile), content_type: file_type})
-
+        upload = obj.put({acl: "public-read", body: File.read("thumbnails/#{file}"), content_type: file_type})
+        File.delete("thumbnails/#{file}")
       end
+      FileUtils.remove_dir("thumbnails")
       puts "Uploading: #{file}"
       obj = Aws::S3::Object.new(client: s3, bucket_name: ENV["S3_OFFLOAD_BUCKET"], key: file)
       upload = obj.put({acl: "public-read", body: File.read(file), content_type: file_type})
