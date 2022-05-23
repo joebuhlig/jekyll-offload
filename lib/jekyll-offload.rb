@@ -12,7 +12,7 @@ module JekyllOffload
 
     Dir['media/**/*.*'].each do |file|
       puts "Uploading: #{file}"
-      file_type = MIME::Types.type_for(file.split('.').last).first
+      file_type = MIME::Types.type_for(file.split('.').last).first.to_s
       obj = Aws::S3::Object.new(client: s3, bucket_name: ENV["S3_OFFLOAD_BUCKET"], key: file)
       upload = obj.put({acl: "public-read", body: File.read(file), content_type: file_type})
       File.delete(file)
