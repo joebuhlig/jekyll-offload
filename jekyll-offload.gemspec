@@ -21,4 +21,5 @@ Gem::Specification.new do |s|
   s.add_dependency "jekyll", ">= 3.7", "< 5.0"
   s.add_dependency  "aws-sdk-s3"
   s.add_dependency "mime-types"
+  s.add_dependency "mini_magick"
 end

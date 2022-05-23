@@ -1,5 +1,7 @@
 require 'aws-sdk-s3'
 require 'mime-types'
+require 'mini_magick'
+require 'fileutils'
 
 module JekyllOffload
   def self.offload()
@@ -11,8 +13,18 @@ module JekyllOffload
     )
 
     Dir['media/**/*.*'].each do |file|
-      puts "Uploading: #{file}"
       file_type = MIME::Types.type_for(file.split('.').last).first.to_s
+      if file_type == "image/jpeg"
+        path = File.dirname(file)
+        FileUtils.mkdir_p("thumbnails/#{path}") unless File.directory?("thumbnails/#{path}")
+        puts "Creating thumbnail: thumbnails/#{file}"
+        image = MiniMagick::Image.open(file)
+        image.resize "400"
+        obj = Aws::S3::Object.new(client: s3, bucket_name: ENV["S3_OFFLOAD_BUCKET"], key: "thumbnails/#{file}")
+        upload = obj.put({acl: "public-read", body: File.read(image.tempfile), content_type: file_type})
+
+      end
+      puts "Uploading: #{file}"
       obj = Aws::S3::Object.new(client: s3, bucket_name: ENV["S3_OFFLOAD_BUCKET"], key: file)
       upload = obj.put({acl: "public-read", body: File.read(file), content_type: file_type})
       File.delete(file)
