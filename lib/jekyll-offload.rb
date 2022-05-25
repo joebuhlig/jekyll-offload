@@ -11,8 +11,8 @@ module JekyllOffload
       File.delete("square/#{file}")
       File.delete(file)
     end
-      FileUtils.remove_dir("thumbnails")
-      FileUtils.remove_dir("square")
+    FileUtils.remove_dir("thumbnails") if File.directory?("thumbnails")
+    FileUtils.remove_dir("square") if File.directory?("square")
   end
 
   def self.push_to_s3(file)
