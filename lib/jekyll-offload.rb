@@ -27,18 +27,22 @@ module JekyllOffload
       path = File.dirname(file)
       FileUtils.mkdir_p("thumbnails/#{path}") unless File.directory?("thumbnails/#{path}")
       FileUtils.mkdir_p("square/#{path}") unless File.directory?("square/#{path}")
+
       puts "Creating thumbnail: thumbnails/#{file}"
-      convert = MiniMagick::Tool::Magick.new
+      convert = MiniMagick::Tool::Convert.new
       convert << file
       convert.resize("x700")
       convert << "thumbnails/#{file}"
       convert.call
       obj = Aws::S3::Object.new(client: s3, bucket_name: ENV["S3_OFFLOAD_BUCKET"], key: "thumbnails/#{file}")
       upload = obj.put({acl: "public-read", body: File.read("thumbnails/#{file}"), content_type: file_type})
-puts "Creating square: square/#{file}"
-      convert = MiniMagick::Tool::Magick.new
+
+      puts "Creating square: square/#{file}"
+      image = MiniMagick::Image.open(file)
+      shortside = image.dimensions.sort.first
+      convert = MiniMagick::Tool::Convert.new
       convert << file
-      convert.merge! ["-thumbnail", "1080x1080^", "-gravity", "center", "-extent", "1080x1080", "-auto-orient"]
+      convert.merge! ["-thumbnail", "#{shortside}x#{shortside}^", "-gravity", "center", "-extent", "#{shortside}x#{shortside}", "-auto-orient"]
       convert << "square/#{file}"
       convert.call
       obj = Aws::S3::Object.new(client: s3, bucket_name: ENV["S3_OFFLOAD_BUCKET"], key: "square/#{file}")
