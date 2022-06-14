@@ -8,7 +8,9 @@ module JekyllOffload
   def self.offload()
     conf = Jekyll.configuration['jekyll_offload'].dup
     conf.each do |dir|
+      puts '-------'
       files = get_files(dir)
+      puts files
       files.each do |file|
         destination = ((dir.has_key? "destination") ? (file.sub(dir['source'], dir['destination'])) : (file))
         push_to_s3(file, destination, dir['thumbnails'], dir['square'])
@@ -22,9 +24,12 @@ module JekyllOffload
   end
 
   def self.get_files(conf)
+    puts conf
     if conf["changed"]
       to_push = []
       @changed = Git.open('.').status.changed.dup unless @changed
+      puts '-------'
+      puts @changed
       Dir["#{conf['source']}/**/*.*"].each do |file|
         if @changed.has_key? file
           to_push.push(file)
