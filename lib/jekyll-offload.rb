@@ -26,9 +26,8 @@ module JekyllOffload
     if conf["changed"]
       to_push = []
       @status = Git.open('.').status unless @status
-      puts @status.inspect
       Dir["#{conf['source']}/**/*.*"].each do |file|
-        if @status.added?(file) || @status.changed?(file)
+        if @status.added?(file) || @status.changed?(file) || @status.untracked?(file)
           to_push.push(file)
         end
       end
