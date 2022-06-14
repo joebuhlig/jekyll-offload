@@ -9,6 +9,7 @@ module JekyllOffload
     conf = Jekyll.configuration['jekyll_offload'].dup
     conf.each do |dir|
       files = get_files(dir)
+      puts files
       files.each do |file|
         destination = ((dir.has_key? "destination") ? (file.sub(dir['source'], dir['destination'])) : (file))
         push_to_s3(file, destination, dir['thumbnails'], dir['square'])
@@ -25,6 +26,7 @@ module JekyllOffload
     if conf["changed"]
       to_push = []
       @status = Git.open('.').status unless @status
+      puts @status.inspect
       Dir["#{conf['source']}/**/*.*"].each do |file|
         if @status.added?(file) || @status.changed?(file)
           to_push.push(file)
