@@ -45,7 +45,7 @@ module JekyllOffload
       region: ENV["S3_OFFLOAD_REGION"]
     )
     file_type = MIME::Types.type_for(file.split('.').last).first.to_s
-    if file_type == "image/jpeg"
+    if file_type == "image/jpeg" or file_type == "image/png"
       path = File.dirname(file)
       FileUtils.mkdir_p("thumbnails/#{path}") unless File.directory?("thumbnails/#{path}")
       FileUtils.mkdir_p("square/#{path}") unless File.directory?("square/#{path}")
